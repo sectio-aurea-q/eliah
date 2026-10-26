@@ -1,6 +1,6 @@
 [package]
 name = "neti-eckart"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 authors = ["Sabrina Hackfort"]
 description = "NETI: accurate Eckart tunnelling transmission coefficients without cancellation, with the small-barrier (cos) branch, validated against certified ball-arithmetic references"

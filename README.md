@@ -78,7 +78,22 @@ println!("{} (ln {}, quad err {:.1e})", k.value, k.ln_value, k.quad_err);
 let p = neti::transmission_si(e_j_mol, v1_j_mol, v2_j_mol, nu_cm)?;  // P(E)
 ```
 
-Python (ctypes; build the library first):
+Python, no compiler needed (pure-Python port, bit-identical to the Rust library on all 1197 certified points):
+
+```bash
+pip install "git+https://github.com/sectio-aurea-q/neti"
+```
+
+```python
+import neti_eckart as neti
+neti.kappa(4.0, 4.0, 2.0)                        # barriers in k_B T, u = h nu / k_B T
+neti.kappa_si(160e3, 160e3, -1200.0, 200.0)      # J/mol, J/mol, cm^-1 (sign ignored), K
+neti.kappa_full(4.0, 4.0, 2.0)                   # dict with value, ln_value, quad_err, tail_bound, ...
+```
+
+A call takes about 1 ms. `python3 tests/test_python.py` checks it against the certified grid.
+
+Python via the Rust library (ctypes; build the library first):
 
 ```python
 import neti as er          # python/neti.py

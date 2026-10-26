@@ -4,3 +4,5 @@ __pycache__/
 validation/grid_in.csv
 validation/*_in.csv
 grid_in.csv
+build/
+*.egg-info/

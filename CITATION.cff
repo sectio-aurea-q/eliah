@@ -8,7 +8,7 @@ authors:
 doi: "10.5281/zenodo.23485066"
 repository-code: "https://github.com/sectio-aurea-q/neti"
 license: Apache-2.0
-version: 0.1.0
+version: 0.2.0
 keywords:
   - tunnelling
   - Eckart barrier

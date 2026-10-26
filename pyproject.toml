@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "neti-eckart"
+version = "0.2.0"
+description = "NETI: accurate Eckart tunnelling coefficients (pure Python, no compiler), validated against certified ball-arithmetic references"
+readme = "README.md"
+license = {text = "Apache-2.0"}
+authors = [{name = "Sabrina Hackfort"}]
+requires-python = ">=3.8"
+keywords = ["tunnelling", "Eckart barrier", "chemical kinetics", "transition state theory"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: Apache Software License",
+  "Topic :: Scientific/Engineering :: Chemistry",
+  "Topic :: Scientific/Engineering :: Physics",
+]
+
+[project.urls]
+Homepage = "https://github.com/sectio-aurea-q/neti"
+DOI = "https://doi.org/10.5281/zenodo.23485066"
+
+[tool.setuptools]
+package-dir = {"" = "python"}
+packages = ["neti_eckart"]
