@@ -1,8 +1,8 @@
-//! neti command line
-//!   neti reduced <v1> <v2> <u>             barriers in k_B T, u = h nu / k_B T
-//!   neti si <V1 kJ/mol> <V2 kJ/mol> <nu cm^-1> <T K>   (note: kJ/mol here, J/mol in the API)
-//!   neti grid <csv>                        rows: v1,v2,u  -> appends kappa
-use neti::{kappa, kappa_si, Kappa};
+//! eliah command line
+//!   eliah reduced <v1> <v2> <u>             barriers in k_B T, u = h nu / k_B T
+//!   eliah si <V1 kJ/mol> <V2 kJ/mol> <nu cm^-1> <T K>   (note: kJ/mol here, J/mol in the API)
+//!   eliah grid <csv>                        rows: v1,v2,u  -> appends kappa
+use eliah::{kappa, kappa_si, Kappa};
 use std::io::{BufRead, BufReader};
 
 fn print(k: &Kappa) {
@@ -36,7 +36,7 @@ fn main() {
             return;
         }
         _ => {
-            eprintln!("usage:\n  neti reduced <v1> <v2> <u>\n  neti si <V1 kJ/mol> <V2 kJ/mol> <nu cm^-1> <T K>\n  neti grid <csv: v1,v2,u>");
+            eprintln!("usage:\n  eliah reduced <v1> <v2> <u>\n  eliah si <V1 kJ/mol> <V2 kJ/mol> <nu cm^-1> <T K>\n  eliah grid <csv: v1,v2,u>");
             std::process::exit(2)
         }
     };

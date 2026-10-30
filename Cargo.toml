@@ -1,20 +1,20 @@
 [package]
-name = "neti-eckart"
-version = "0.2.0"
+name = "eliah"
+version = "0.3.0"
 edition = "2021"
 authors = ["Sabrina Hackfort"]
-description = "NETI: accurate Eckart tunnelling transmission coefficients without cancellation, with the small-barrier (cos) branch, validated against certified ball-arithmetic references"
+description = "ELIAH: accurate Eckart tunnelling transmission coefficients without cancellation, with the small-barrier (cos) branch, validated against certified ball-arithmetic references"
 license = "Apache-2.0"
-repository = "https://github.com/sectio-aurea-q/neti"
+repository = "https://github.com/sectio-aurea-q/eliah"
 keywords = ["tunnelling", "kinetics", "eckart", "chemistry", "numerics"]
 
 [lib]
-name = "neti"
+name = "eliah"
 path = "src/lib.rs"
 crate-type = ["rlib", "cdylib"]
 
 [[bin]]
-name = "neti"
+name = "eliah"
 path = "src/main.rs"
 
 [dependencies]

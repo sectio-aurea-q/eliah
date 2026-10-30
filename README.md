@@ -1,12 +1,15 @@
-# NETI
+# ELIAH
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23485066.svg)](https://doi.org/10.5281/zenodo.23485066)
 
-*Named after Neti, the gatekeeper of the seven gates in Mesopotamian myth, who decides
-who passes through. Tunnelling is passage through a barrier that cannot be crossed
+*Named after the prophet Elijah (Eliah), who struck the Jordan with his mantle and crossed
+on dry ground (2 Kings 2:8). Tunnelling is passage through a barrier that cannot be crossed
 classically.*
 
-NETI computes accurate Eckart tunnelling transmission coefficients κ(T) and checks
+Formerly NETI (versions 0.1.0 and 0.2.0); renamed in 0.3.0 without numerical changes.
+The DOI is unchanged.
+
+ELIAH computes accurate Eckart tunnelling transmission coefficients κ(T) and checks
 them against certified ball-arithmetic enclosures.
 
 The Eckart barrier is the standard one-dimensional tunnelling correction in transition-state
@@ -20,7 +23,7 @@ theory, and most kinetics codes implement it. The usual arrangement,
    `cos(2π|d|)` (Johnston & Heicklen 1962; Brown 1981). Using `cosh` with `|…|` makes κ too
    small, sometimes below 1.
 
-NETI fixes both, and avoids two further losses of accuracy:
+ELIAH fixes both, and avoids two further losses of accuracy:
 
 - **No cancellation in P.** It evaluates `P = 2 sinh A sinh B / (cosh(A+B) + D)` in log
   space, with the correct branch for D.
@@ -62,7 +65,7 @@ Reproduce:
 
 ```bash
 cargo build --release && cargo test --release
-python3 conformance/conformance.py          # NETI against the certified grid
+python3 conformance/conformance.py          # ELIAH against the certified grid
 python3 validation/validate.py              # same, with statistics
 python3 examples/naive_form.py              # the textbook arrangement
 ```
@@ -72,23 +75,23 @@ python3 examples/naive_form.py              # the textbook arrangement
 Rust:
 
 ```rust
-let k = neti::kappa(v1, v2, u)?;          // barriers in k_B T, u = h nu / k_B T
-let k = neti::kappa_si(v1_j_mol, v2_j_mol, nu_cm, t_k)?;   // J/mol, J/mol, cm^-1, K
+let k = eliah::kappa(v1, v2, u)?;          // barriers in k_B T, u = h nu / k_B T
+let k = eliah::kappa_si(v1_j_mol, v2_j_mol, nu_cm, t_k)?;   // J/mol, J/mol, cm^-1, K
 println!("{} (ln {}, quad err {:.1e})", k.value, k.ln_value, k.quad_err);
-let p = neti::transmission_si(e_j_mol, v1_j_mol, v2_j_mol, nu_cm)?;  // P(E)
+let p = eliah::transmission_si(e_j_mol, v1_j_mol, v2_j_mol, nu_cm)?;  // P(E)
 ```
 
 Python, no compiler needed (pure-Python port, bit-identical to the Rust library on all 1197 certified points):
 
 ```bash
-pip install "git+https://github.com/sectio-aurea-q/neti"
+pip install "git+https://github.com/sectio-aurea-q/eliah"
 ```
 
 ```python
-import neti_eckart as neti
-neti.kappa(4.0, 4.0, 2.0)                        # barriers in k_B T, u = h nu / k_B T
-neti.kappa_si(160e3, 160e3, -1200.0, 200.0)      # J/mol, J/mol, cm^-1 (sign ignored), K
-neti.kappa_full(4.0, 4.0, 2.0)                   # dict with value, ln_value, quad_err, tail_bound, ...
+import eliah
+eliah.kappa(4.0, 4.0, 2.0)                        # barriers in k_B T, u = h nu / k_B T
+eliah.kappa_si(160e3, 160e3, -1200.0, 200.0)      # J/mol, J/mol, cm^-1 (sign ignored), K
+eliah.kappa_full(4.0, 4.0, 2.0)                   # dict with value, ln_value, quad_err, tail_bound, ...
 ```
 
 A call takes about 1 ms. `python3 tests/test_python.py` checks it against the certified grid.
@@ -96,21 +99,21 @@ A call takes about 1 ms. `python3 tests/test_python.py` checks it against the ce
 Python via the Rust library (ctypes; build the library first):
 
 ```python
-import neti as er          # python/neti.py
+import eliah_ffi as er          # python/eliah_ffi.py
 er.kappa(4.0, 4.0, 2.0)
 er.kappa_si(160e3, 160e3, -1200.0, 200.0)      # negative (imaginary) frequency is accepted
 er.kappa_full(800, 800, 400)                   # dict with value (inf here), ln_value, quad_err, ...
 ```
 
-C / C++ / Fortran: see `include/neti.h` and `examples/c_example.c`
-(`gcc -Iinclude examples/c_example.c -Ltarget/release -lneti`).
+C / C++ / Fortran: see `include/eliah.h` and `examples/c_example.c`
+(`gcc -Iinclude examples/c_example.c -Ltarget/release -leliah`).
 
 Command line:
 
 ```bash
-neti reduced 4 4 2
-neti si 160 160 1200 200          # kJ/mol, kJ/mol, cm^-1, K  (J/mol in the API)
-neti grid points.csv              # rows v1,v2,u; one output row per input row
+eliah reduced 4 4 2
+eliah si 160 160 1200 200          # kJ/mol, kJ/mol, cm^-1, K  (J/mol in the API)
+eliah grid points.csv              # rows v1,v2,u; one output row per input row
 ```
 
 ## Conventions
@@ -143,11 +146,17 @@ How the certified grid was made:
 - Codes that use a coarse fixed energy grid add their own quadrature error, which the test
   also shows.
 
+## Changes in 0.3.0
+
+Renamed from NETI to ELIAH: crate and Python package `eliah`, C functions `eliah_*`
+and type `EliahResult` (header `include/eliah.h`), command-line tool `eliah`, ctypes wrapper
+`python/eliah_ffi.py`. No numerical changes; results are bit-identical to 0.2.0.
+
 ## Limits
 
 - This is the one-dimensional Eckart model. It is not multidimensional tunnelling,
   instanton theory or small-curvature tunnelling.
-- NETI is validated against certified and independent high-precision values. It is
+- ELIAH is validated against certified and independent high-precision values. It is
   not a certified computation in every call. A ball-arithmetic mode for per-call enclosures
   is planned.
 - The certified grid covers α ≤ 100. Beyond that the evidence is the independent 50-digit
@@ -162,4 +171,4 @@ Tools: Rust, Arb / python-flint, mpmath, Claude.
 
 ## License
 
-Apache-2.0. If you use NETI or its reference grid in published work, please cite it (see `CITATION.cff`).
+Apache-2.0. If you use ELIAH or its reference grid in published work, please cite it (see `CITATION.cff`).

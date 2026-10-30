@@ -3,5 +3,5 @@
 version = 4
 
 [[package]]
-name = "neti-eckart"
-version = "0.2.0"
+name = "eliah"
+version = "0.3.0"

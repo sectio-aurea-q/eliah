@@ -1,23 +1,23 @@
-"""NETI in pure Python: accurate Eckart tunnelling coefficients, no compiler needed.
+"""ELIAH in pure Python: accurate Eckart tunnelling coefficients, no compiler needed.
 
-    pip install "git+https://github.com/sectio-aurea-q/neti"
+    pip install "git+https://github.com/sectio-aurea-q/eliah"
 
-    import neti_eckart as neti
-    neti.kappa(v1, v2, u)                    # reduced units: barriers in k_B T, u = h nu / k_B T
-    neti.kappa_si(V1, V2, nu_cm, T)          # J/mol, J/mol, cm^-1 (sign ignored), K
-    neti.kappa_full(v1, v2, u)               # dict: value, ln_value, quad_err, tail_bound, cos_branch, evals
-    neti.log_transmission(v1, v2, u, eps)    # ln P(eps), eps above the higher asymptote in k_B T
-    neti.transmission_si(E, V1, V2, nu_cm)   # P(E), E from the higher asymptote, all in J/mol
+    import eliah
+    eliah.kappa(v1, v2, u)                    # reduced units: barriers in k_B T, u = h nu / k_B T
+    eliah.kappa_si(V1, V2, nu_cm, T)          # J/mol, J/mol, cm^-1 (sign ignored), K
+    eliah.kappa_full(v1, v2, u)               # dict: value, ln_value, quad_err, tail_bound, cos_branch, evals
+    eliah.log_transmission(v1, v2, u, eps)    # ln P(eps), eps above the higher asymptote in k_B T
+    eliah.transmission_si(E, V1, V2, nu_cm)   # P(E), E from the higher asymptote, all in J/mol
 
 This is a line-by-line port of the Rust library (src/lib.rs) and gives the same results:
 it passes the certified conformance grid (1197 points) within 1e-12, like the Rust version.
 Conventions: Johnston & Heicklen (1962), Brown (1981); see the README.
 
-Cite: S. Hackfort, NETI, doi:10.5281/zenodo.23485066.
+Cite: S. Hackfort, ELIAH (formerly NETI), doi:10.5281/zenodo.23485066.
 """
 import math
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 __all__ = ["kappa", "kappa_si", "kappa_full", "log_transmission", "transmission_si",
            "Barrier", "EckartError", "REL_TOL", "TAIL", "MAX_EVALS"]
 
