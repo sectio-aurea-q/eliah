@@ -1,6 +1,6 @@
 /* ELIAH C interface. Link with -leliah (target/release/libeliah.{so,dylib}).
  * Return codes: 0 ok, 1 invalid input (non-finite or non-positive), 2 no convergence/overflow.
- * On error all fields of *out are NaN. out may be NULL. */
+ * On error the double fields of *out are NaN, cos_branch and evals 0. out may be NULL. */
 #ifndef ELIAH_H
 #define ELIAH_H
 #include <stdint.h>

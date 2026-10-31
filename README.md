@@ -13,7 +13,7 @@ ELIAH computes accurate Eckart tunnelling transmission coefficients κ(T) and ch
 them against certified ball-arithmetic enclosures.
 
 The Eckart barrier is the standard one-dimensional tunnelling correction in transition-state
-theory, and most kinetics codes implement it. The usual arrangement,
+theory, and many kinetics codes implement it. A common arrangement (used, for example, in RMG-Py),
 `P = 1 − (cosh(A−B) + cosh D)/(cosh(A+B) + cosh D)`, has two numerical defects:
 
 1. **Cancellation.** `1 − (…)` returns exactly 0 once the true value is below about 1e-16.
@@ -21,12 +21,12 @@ theory, and most kinetics codes implement it. The usual arrangement,
    so κ comes out too small.
 2. **Small barriers.** For `4·sqrt(V1·V2) < hν`, 2πd is imaginary, and `cosh(2πd)` must become
    `cos(2π|d|)` (Johnston & Heicklen 1962; Brown 1981). Using `cosh` with `|…|` makes κ too
-   small, sometimes below 1.
+   small, by up to 98 % on the certified grid, often below 1 where the true κ exceeds 1.
 
-ELIAH fixes both, and avoids two further losses of accuracy:
+ELIAH fixes both. In detail:
 
-- **No cancellation in P.** It evaluates `P = 2 sinh A sinh B / (cosh(A+B) + D)` in log
-  space, with the correct branch for D.
+- **No cancellation in P.** It evaluates `P = 2 sinh A sinh B / (cosh(A+B) + cosh D)` in log
+  space; in the small-barrier branch cosh D becomes cos|D|.
 - **No cancellation in the cos branch.** It writes the denominator there as
   `2 sinh²((A+B)/2) + 2 cos²(π|d|)`, a sum of two non-negative terms, so it stays accurate
   even when cos(2π|d|) ≈ −1 (very small barriers).
@@ -45,21 +45,26 @@ ELIAH fixes both, and avoids two further losses of accuracy:
 | Certified Arb grid, α 0.5–100, u* 0.05–30 (`conformance/eckart_certified.csv`) | 1197 / 1197 within 1e-12 | 4.5e-14 | 4.4e-16 |
 | — of which cos branch | 102 | 7.8e-16 | |
 | Independent 50-digit reference, random, v up to 500, u 0.01–80 | 303 / 303 | 7.7e-14 | 2.2e-16 |
-| Independent 50-digit reference, random, v 1e-4 – 5e4, u 0.0035–300 (`validation/sweep2.py`) | 197 / 197 (185 within 1e-13) | 2.2e-12 | < 1e-16 |
+| Independent 50-digit reference, random, v 1e-4 – 5e4, u 0.0035–300 (`validation/sweep2.py`) | 197 / 197 within 3e-12 (195 within 1e-12, 185 within 1e-13) | 2.2e-12 | — |
 
 The independent reference (`validation/independent_mpmath_ref.py`) does not use the
 α-parametrisation. It starts from the Eckart potential itself, with the closed-form P(E)
-checked against a direct numerical solution of the Schrödinger equation.
+checked against a direct numerical solution of the Schrödinger equation
+(`validation/ode_check.py`, agreement within 4e-13 in both branches). The CSV of the second
+reference stores 15 significant digits, so no median is given for it.
 
-The largest errors occur where κ is very large (κ ≈ 1e98 at α = 100, u* = 25). They come from
-float64 rounding in the large exponent e^{v_min}: about half from rounding the input, about
-half from the library's own arithmetic.
+On the certified grid the largest errors occur where κ is very large (κ ≈ 1e98 at α = 100,
+u* = 25). They come from float64 rounding in the large exponent e^{v_min}: about half from
+rounding the input, about half from the library's own arithmetic. Beyond the grid the error
+grows with α, to about 2e-12 at α ≈ 1e6, where κ ≈ 1; it comes from rounding in the large
+arguments of the hyperbolic functions.
 
 For comparison, the textbook arrangement above fails 256 of the 1197 certified points at
-1e-6 (102 in the cos branch, 121 from cancellation, 33 from overflow). It was integrated with
-the same accurate quadrature but without overflow guards (`examples/naive_form.py`).
+1e-6 (102 in the cos branch, 38 from overflow, 116 others, nearly all from cancellation). It
+was integrated with an accurate quadrature (scipy) but without overflow guards
+(`examples/naive_form.py`).
 
-A typical call needs about 500–800 integrand evaluations.
+A call needs 315–615 integrand evaluations on the certified grid (median 390).
 
 Reproduce:
 
@@ -105,8 +110,37 @@ er.kappa_si(160e3, 160e3, -1200.0, 200.0)      # negative (imaginary) frequency 
 er.kappa_full(800, 800, 400)                   # dict with value (inf here), ln_value, quad_err, ...
 ```
 
-C / C++ / Fortran: see `include/eliah.h` and `examples/c_example.c`
+C++ (header-only, C++17, `include/eliah.hpp`; errors become `eliah::error`):
+
+```cpp
+#include "eliah.hpp"
+const eliah::Kappa k = eliah::kappa_si(160e3, 160e3, -1200.0, 200.0);   // J/mol, J/mol, cm^-1, K
+std::printf("%.10g (ln %.10g)\n", k.value, k.ln_value);                // 32639.06965 (ln 10.39326531)
+```
+
+```bash
+c++ -std=c++17 -Iinclude examples/cpp_example.cpp -Ltarget/release -leliah -o cpp_example
+c++ -std=c++17 -Iinclude tests/test_cpp.cpp -Ltarget/release -leliah -o test_cpp
+LD_LIBRARY_PATH=target/release ./test_cpp conformance/eckart_certified.csv
+```
+
+On macOS use `DYLD_LIBRARY_PATH`. The C++ test passes all 1197 certified points (worst relative
+error 4.5e-14) with GCC and Clang.
+
+C / Fortran: see `include/eliah.h` and `examples/c_example.c`
 (`gcc -Iinclude examples/c_example.c -Ltarget/release -leliah`).
+
+Browser (WebAssembly, no JavaScript glue needed; `wasm/`):
+
+```bash
+rustup target add wasm32-unknown-unknown
+cd wasm && cargo build --release --target wasm32-unknown-unknown
+node check_wasm.mjs target/wasm32-unknown-unknown/release/eliah_wasm.wasm ../conformance/eckart_certified.csv
+```
+
+The module (about 48 kB) exports `kappa` and `kappa_si`, which write their results to `result_ptr()`, and
+the C functions. It passes all 1197 certified points (worst 4.5e-14) and agrees with the native library
+to 7e-15. It runs live on [sectio-aurea-q.github.io/eliah.html](https://sectio-aurea-q.github.io/eliah.html).
 
 Command line:
 
@@ -145,6 +179,13 @@ How the certified grid was made:
 - The bounds are widened by a relative 1e-24 to account for decimal printing.
 - Codes that use a coarse fixed energy grid add their own quadrature error, which the test
   also shows.
+
+## Changes since 0.3.0
+
+C++ interface `include/eliah.hpp` with example and test, the browser build in `wasm/`, and
+`validation/ode_check.py`, the direct Schrödinger check of the independent reference. Corrected
+in this README: the failure split of the textbook arrangement and the accuracy notes. The
+library itself is unchanged.
 
 ## Changes in 0.3.0
 

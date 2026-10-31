@@ -1,7 +1,7 @@
 """What the conformance test reports for the common textbook arrangement.
 
 P = 1 - (cosh(A-B) + cosh(D)) / (cosh(A+B) + cosh(D)),  D = 2*sqrt(|alpha1*alpha2 - pi^2/4|)
-integrated with the same accurate quadrature (scipy), so only the arithmetic of P differs.
+integrated with an accurate quadrature (scipy), so only the arithmetic of P differs.
 """
 import math, os, sys
 from scipy.integrate import quad
